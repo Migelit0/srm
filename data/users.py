@@ -12,6 +12,11 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
     surname = Column(String, nullable=False)
-    type = Column(Integer, nullable=False)
+    type = Column(Integer, nullable=False)  # 1 - teacher, 2 - student
     hashed_password = Column(String, nullable=True)
 
+    def set_password(self, password):
+        self.hashed_password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.hashed_password, password)

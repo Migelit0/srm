@@ -6,6 +6,9 @@ from flask_restful import Api
 
 from data import db_session
 from keys.key import SECRET_KEY
+from data.attendance import Attendance
+from data.users import User
+from data.lessons import Lessons
 
 app = Flask(__name__)
 api = Api(app)
@@ -16,6 +19,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
 app.config['JSON_AS_ASCII'] = False
 login_manager = LoginManager()
 login_manager.init_app(app)
+
 
 @app.route("/cookie_test")
 def cookie_test():
@@ -42,7 +46,7 @@ def session_test():
 
 
 def main():
-    db_session.global_init('db/blogs.db')
+    db_session.global_init('db/main.db')
     # app.register_blueprint(jobs_api.blueprint)
     app.run(debug=True)
 
