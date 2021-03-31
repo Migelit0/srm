@@ -1,1 +1,1 @@
-from . import users, lessons, attendance
+from . import users, lessons, attendance, groups
