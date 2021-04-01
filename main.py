@@ -3,12 +3,13 @@ from datetime import timedelta
 from flask import Flask, render_template, redirect, make_response, session, abort, request, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_restful import Api
-
+from forms.user import LoginForm
 from data import db_session
 from keys.key import SECRET_KEY
 from data.attendance import Attendance
 from data.users import User
 from data.lessons import Lessons
+from for_db import add_attendances
 
 app = Flask(__name__)
 api = Api(app)
@@ -19,6 +20,12 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(
 app.config['JSON_AS_ASCII'] = False
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    db_sess = db_session.create_session()
+    return db_sess.query(User).get(user_id)
 
 
 @app.route("/cookie_test")
@@ -43,6 +50,21 @@ def session_test():
     session['visits_count'] = visits_count + 1
     return make_response(
         f"Вы пришли на эту страницу {visits_count + 1} раз")
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember_me.data)
+            return redirect("/")
+        return render_template('login.html',
+                               message="Неправильный логин или пароль",
+                               form=form)
+    return render_template('login.html', title='Авторизация', form=form)
 
 
 def main():
