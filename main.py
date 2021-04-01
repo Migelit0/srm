@@ -46,7 +46,7 @@ def session_test():
 
 
 def main():
-    db_session.global_init('db/main.db')
+    db_session.global_init('main.db')
     # app.register_blueprint(jobs_api.blueprint)
     app.run(debug=True)
 

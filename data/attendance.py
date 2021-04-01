@@ -14,7 +14,6 @@ class Attendance(SqlAlchemyBase, SerializerMixin):
     lesson_id = Column(Integer, ForeignKey("lessons.id"), nullable=False)
     lesson = orm.relation('Lessons')
     lesson_number = Column(Integer, nullable=False)
-    group_id = Column(Integer, nullable=True)
-    group = orm.relation('Groups')
+    group_id = Column(Integer, ForeignKey("groups.id"), nullable=True)
+    group = orm.relation('Group')
     is_attended = Column(Boolean, nullable=True, default=False)
-
