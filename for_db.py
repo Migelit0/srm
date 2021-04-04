@@ -31,4 +31,4 @@ def add_attendances(lesson_id, group_id):
 
 
 if __name__ == '__main__':
-    pass
+    add_attendances(1, 1)

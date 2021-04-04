@@ -11,14 +11,16 @@ db_sess = db_session.create_session()
 new_user = User(
     name='teacher_name',
     surname='teacher_surname',
-    type=1
+    type=1,
+    login='teacher_login'
 )
 new_user.set_password('test')
 db_sess.add(new_user)
 new_user = User(
     name='student_name',
     surname='student_surname',
-    type=2
+    type=2,
+    login='login1'
 )
 new_user.set_password('test')
 db_sess.add(new_user)
@@ -26,7 +28,8 @@ db_sess.add(new_user)
 new_user = User(
     name='student_name2',
     surname='student_surname2',
-    type=2
+    type=2,
+    login='login2'
 )
 new_user.set_password('test')
 db_sess.add(new_user)
@@ -35,7 +38,8 @@ db_sess.commit()
 new_lesson = Lessons(
     teacher_id=1,
     date='1-18:00',
-    title='Math'
+    title='Math',
+    group_id=1
 )
 db_sess.add(new_lesson)
 db_sess.commit()
@@ -43,7 +47,8 @@ db_sess.commit()
 new_lesson = Lessons(
     teacher_id=1,
     date='2-18:00',
-    title='Math'
+    title='Math',
+    group_id=1
 )
 db_sess.add(new_lesson)
 db_sess.commit()

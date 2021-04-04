@@ -1,15 +1,15 @@
 from datetime import timedelta
 
-from flask import Flask, render_template, redirect, make_response, session, abort, request, jsonify
+from flask import Flask, render_template, redirect, make_response, session, request
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_restful import Api
-from forms.user import LoginForm
+
 from data import db_session
-from keys.key import SECRET_KEY
-from data.attendance import Attendance
+from data.groups import Group
 from data.users import User
+from forms.user import LoginForm
 from data.lessons import Lessons
-from for_db import add_attendances
+from keys.key import SECRET_KEY
 
 app = Flask(__name__)
 api = Api(app)
@@ -57,7 +57,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == form.email.data).first()
+        user = db_sess.query(User).filter(User.login == form.login.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
@@ -67,8 +67,27 @@ def login():
     return render_template('login.html', title='Авторизация', form=form)
 
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect("/")
+
+@app.route('/')
+def index():
+
+    if current_user.is_authenticated:
+        db_sess = db_session.create_session()
+        if current_user.type == 1:
+            lessons = db_sess.query(Lessons).filter(Lessons.group.teacher_id == current_user.id).all()
+            print(lessons)
+            return render_template('index_teacher.html', title='Главная', lessons=lessons)
+        elif current_user.type == 2:
+            return render_template('index_student.html', title='Главная', groups=groups)
+    return redirect('/login')
+
 def main():
-    db_session.global_init('main.db')
+    db_session.global_init('db/main.db')
     # app.register_blueprint(jobs_api.blueprint)
     app.run(debug=True)
 
