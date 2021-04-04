@@ -1,10 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block content %}
+
+
+<div class="container">
+    {% for item in lessons %}
+
+    <div class="row row-cols-4 row-cols-sm-3 row-cols-md-4">
+        <div class="col p-3 mb-0 bg-primary text-white text-center h3 img-fluid" style="border-top-left-radius: 15px">
+            Номер группы
+        </div>
+        <div class="col p-3 mb-0 bg-primary text-white text-center h3 img-fluid">Предмет</div>
+        <div class="col p-3 mb-0 bg-primary text-white text-center h3 img-fluid"></div>
+        <div class="col p-3 mb-0 bg-primary text-white text-center h3 img-fluid"
+             style="border-top-right-radius: 15px"></div>
+        {% if item.group_id != None %}
+        <div class="col p-4 mb-2 bg-info text-white text-center h4">{{item.group_id}}</div>
+        {% else %}
+        <div class="col p-4 mb-2 bg-danger text-white text-center h4">ПАТОМ ДАДЕЛАЮ (nONE)</div>
+        {% endif %}
+        <div class="col p-4 mb-2 bg-success text-white text-center h4">{{item.title}}</div>
+
+        <div class="col p-3 mb-2 bg-info text-white text-center">
+            <a type="button" class="btn btn-secondary btn-lg btn-block" style="height: 100%"
+               href="/lesson/{{ item.id }}">Отметить посещаемость</a>
+        </div>
+
+        <div class="col p-3 mb-2 bg-info text-white text-center">
+            <a type="button" class="btn btn-secondary btn-lg btn-block" style="height: 100%"
+               href="/lesson/pay/{{ current_user.key }}/{{ item.id }}">Отметить оплату</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+{% endblock %}

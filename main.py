@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from flask import Flask, render_template, redirect, make_response, session, request
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
@@ -75,16 +75,16 @@ def logout():
 
 @app.route('/')
 def index():
-
     if current_user.is_authenticated:
         db_sess = db_session.create_session()
         if current_user.type == 1:  # для преподов
-            lessons = db_sess.query(Lessons).filter(Lessons.teacher_id == current_user.id).all()
+            today = datetime.now().weekday()
+            lessons = db_sess.query(Lessons).filter(Lessons.teacher_id == current_user.id, Lessons.date.like(f'{today}%')).all()
             # print(lessons)
             return render_template('index_teacher.html', title='Главная', lessons=lessons)
         elif current_user.type == 2:    # для студента
             return render_template('index_student.html', title='Главная', lessons=lessons)
-        elif current_user.type == 2:    # для админа
+        elif current_user.type == 3:    # для админа
             lessons = db_sess.query(Lessons).all()
             return render_template('index_admin.html', title='Главная', lessons=lessons)
     return redirect('/login')

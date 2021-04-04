@@ -51,7 +51,15 @@ new_lesson = Lessons(
     group_id=1
 )
 db_sess.add(new_lesson)
+
 db_sess.commit()
+new_lesson = Lessons(
+    teacher_id=1,
+    date='6-18:00',
+    title='Math',
+    group_id=1
+)
+db_sess.add(new_lesson)
 
 new_lesson = Lessons(
     teacher_id=1,

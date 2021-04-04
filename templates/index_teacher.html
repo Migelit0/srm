@@ -2,7 +2,7 @@
 
 {% block content %}
 
-
+{% if lessons != [] %}
 <div class="container">
     {% for item in lessons %}
 
@@ -28,5 +28,12 @@
     {% endfor %}
 </div>
 
+{% else %}
+
+<div class="col p-3 mb-0 bg-danger text-white text-center h3 img-fluid" style="border-radius: 15px">
+    У вас сегодня нет занятий
+</div>
+
+{% endif %}
 
 {% endblock %}
