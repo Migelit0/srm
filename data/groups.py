@@ -12,3 +12,4 @@ class Group(SqlAlchemyBase, SerializerMixin):
     students = Column(String, nullable=False)  # split ;;
     teacher_id = Column(Integer, nullable=True)
     # teacher = orm.relation('Users')
+    lessons = orm.relation('Lessons', back_populates='group')

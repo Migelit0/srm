@@ -2,22 +2,31 @@
 
 {% block content %}
 
-{% for item in lessons %}
 
- <div class="container">
-            <div class="row row-cols-4 row-cols-sm-2 row-cols-md-4">
-                <div class="col p-3 mb-2 bg-primary text-white">Номер группы</div>
-                <div class="col p-3 mb-2 bg-primary text-white">Предмет</div>
-                <div class="col p-3 mb-2 bg-primary text-white"></div>
-                <div class="col p-3 mb-2 bg-light text-dark">{{item.id}}</div>
-                <div class="col p-3 mb-2 bg-light text-dark">{{item.work_size}}</div>
-                {% if item.is_finished %}
-                <div class="col p-3 mb-2 bg-success text-white">да</div>
-                {% else %}
-                <div class="col p-3 mb-2 bg-danger text-white">нет</div>
-                {% endif %}
-            </div>
+<div class="container">
+    {% for item in lessons %}
 
-{% endfor %}
+    <div class="row row-cols-4 row-cols-sm-3 row-cols-md-3">
+        <div class="col p-3 mb-0 bg-primary text-white text-center h3 img-fluid" style="border-top-left-radius: 15px">
+            Номер группы
+        </div>
+        <div class="col p-3 mb-0 bg-primary text-white text-center h3 img-fluid">Предмет</div>
+        <div class="col p-3 mb-0 bg-primary text-white text-center h3 img-fluid"
+             style="border-top-right-radius: 15px"></div>
+        {% if item.group_id != None %}
+        <div class="col p-4 mb-2 bg-info text-white text-center h4">{{item.group_id}}</div>
+        {% else %}
+        <div class="col p-4 mb-2 bg-danger text-white text-center h4">ПАТОМ ДАДЕЛАЮ (nONE)</div>
+        {% endif %}
+        <div class="col p-4 mb-2 bg-success text-white text-center h4">{{item.title}}</div>
+
+        <div class="col p-3 mb-2 bg-info text-white text-center">
+            <a type="button" class="btn btn-secondary btn-lg btn-block" style="height: 100%"
+               href="/lesson/{{ item.id }}">Отметить посещаемость</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
 
 {% endblock %}

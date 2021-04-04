@@ -78,12 +78,15 @@ def index():
 
     if current_user.is_authenticated:
         db_sess = db_session.create_session()
-        if current_user.type == 1:
-            lessons = db_sess.query(Lessons).filter(Lessons.group.teacher_id == current_user.id).all()
-            print(lessons)
+        if current_user.type == 1:  # для преподов
+            lessons = db_sess.query(Lessons).filter(Lessons.teacher_id == current_user.id).all()
+            # print(lessons)
             return render_template('index_teacher.html', title='Главная', lessons=lessons)
-        elif current_user.type == 2:
-            return render_template('index_student.html', title='Главная', groups=groups)
+        elif current_user.type == 2:    # для студента
+            return render_template('index_student.html', title='Главная', lessons=lessons)
+        elif current_user.type == 2:    # для админа
+            lessons = db_sess.query(Lessons).all()
+            return render_template('index_admin.html', title='Главная', lessons=lessons)
     return redirect('/login')
 
 def main():

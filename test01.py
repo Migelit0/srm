@@ -7,4 +7,11 @@ from data.groups import Group
 
 db_session.global_init("db/main.db")
 db_sess = db_session.create_session()
-print(db_sess.query(Lessons).first().group.teacher_id)
+new_admin = User(
+    name='admin',
+    surname='admin',
+    type=3,
+    login='admin')
+new_admin.set_password('admin')
+db_sess.add(new_admin)
+db_sess.commit()

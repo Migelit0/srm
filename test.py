@@ -16,6 +16,7 @@ new_user = User(
 )
 new_user.set_password('test')
 db_sess.add(new_user)
+
 new_user = User(
     name='student_name',
     surname='student_surname',
@@ -24,6 +25,14 @@ new_user = User(
 )
 new_user.set_password('test')
 db_sess.add(new_user)
+
+new_admin = User(
+    name='admin',
+    surname='admin',
+    type=3,
+    login='admin')
+new_admin.set_password('admin')
+db_sess.add(new_admin)
 
 new_user = User(
     name='student_name2',
