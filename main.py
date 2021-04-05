@@ -7,8 +7,9 @@ from flask_restful import Api
 from data import db_session
 from data.groups import Group
 from data.users import User
-from forms.user import LoginForm
+from data.attendance import Attendance
 from data.lessons import Lessons
+from forms.user import LoginForm
 from keys.key import SECRET_KEY
 
 app = Flask(__name__)
@@ -72,6 +73,19 @@ def login():
 def logout():
     logout_user()
     return redirect("/")
+
+@app.route('/lesson/<int:lesson_id>', methods=['GET', 'POST'])
+@login_required
+def lesson_attendance(lesson_id):
+    db_sess = db_session.create_session()
+    if current_user.type == 1:
+        attendance = db_sess.query(Attendance).filter(Attendance.lesson_id == lesson_id).all()
+        return render_template('attendance_table.html', attendance=attendance)
+    elif current_user.type == 2:
+        return render_template('error.html')
+    elif current_user.type == 3:
+        attendance = db_sess.query(Lessons).filter(Lessons.id == lesson_id).all()
+        return render_template('attendance_table.html', attendance=attendance)
 
 @app.route('/')
 def index():
