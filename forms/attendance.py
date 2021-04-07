@@ -4,5 +4,5 @@ from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired
 
 
-class AttendanceTable(FlaskForm):
+class AttendanceTable(FlaskForm):   # https://github.com/SergioLlana/datatables-flask-serverside
     forms = []
