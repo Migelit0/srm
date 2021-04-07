@@ -5,9 +5,11 @@ from data.groups import Group
 from data.users import User
 
 
-def add_attendances(lesson_id, group_id):
+def add_attendances(lesson_id):
     db_session.global_init("db/main.db")
     db_sess = db_session.create_session()
+
+    group_id = db_sess.query(Lessons.group_id).filter(Lessons.id == lesson_id).first()[0]
 
     student_ids = list(map(int, db_sess.query(Group.students).filter(Group.id == group_id).first()[0].split(';;')))
     # print(student_ids)
@@ -31,4 +33,4 @@ def add_attendances(lesson_id, group_id):
 
 
 if __name__ == '__main__':
-    add_attendances(1, 1)
+    add_attendances(2)

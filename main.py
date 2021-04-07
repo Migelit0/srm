@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from flask import Flask, render_template, redirect, make_response, session, request
+from flask import Flask, render_template, redirect, make_response, session, request, abort
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_restful import Api
 
@@ -74,18 +74,37 @@ def logout():
     logout_user()
     return redirect("/")
 
+
 @app.route('/lesson/<int:lesson_id>', methods=['GET', 'POST'])
 @login_required
 def lesson_attendance(lesson_id):
     db_sess = db_session.create_session()
-    if current_user.type == 1:
+    if current_user.type in (1, 3):
         attendance = db_sess.query(Attendance).filter(Attendance.lesson_id == lesson_id).all()
+
+        # attendance.sort(key=lambda x: int(db_sess.query(Lessons).filter(Lessons.id == x.lesson_id).first().date[0]))
+        # print([db_sess.query(Lessons).filter(Lessons.id == i.lesson_id).first().date for i in attendance])
+
+        attendance.sort(key=lambda x: x.lesson_number)
+
+        data = [[]]
+        prev = attendance[0].lesson_number
+        for elem in attendance:
+            if elem.lesson_number != prev:
+                prev = elem.lesson_number
+                data.append([])
+            data[-1].append(elem)
+
+        # for elem in data:
+        #     print(elem)
+
         return render_template('attendance_table.html', attendance=attendance)
     elif current_user.type == 2:
-        return render_template('error.html')
-    elif current_user.type == 3:
-        attendance = db_sess.query(Lessons).filter(Lessons.id == lesson_id).all()
-        return render_template('attendance_table.html', attendance=attendance)
+        return abort(404)
+    # elif current_user.type == 3:
+    #     attendance = db_sess.query(Lessons).filter(Lessons.id == lesson_id).all()
+    #     return render_template('attendance_table.html', attendance=attendance)
+
 
 @app.route('/')
 def index():
@@ -93,15 +112,17 @@ def index():
         db_sess = db_session.create_session()
         if current_user.type == 1:  # для преподов
             today = datetime.now().weekday()
-            lessons = db_sess.query(Lessons).filter(Lessons.teacher_id == current_user.id, Lessons.date.like(f'{today}%')).all()
+            lessons = db_sess.query(Lessons).filter(Lessons.teacher_id == current_user.id,
+                                                    Lessons.date.like(f'{today}%')).all()
             # print(lessons)
             return render_template('index_teacher.html', title='Главная', lessons=lessons)
-        elif current_user.type == 2:    # для студента
+        elif current_user.type == 2:  # для студента
             return render_template('index_student.html', title='Главная', lessons=lessons)
-        elif current_user.type == 3:    # для админа
+        elif current_user.type == 3:  # для админа
             lessons = db_sess.query(Lessons).all()
             return render_template('index_admin.html', title='Главная', lessons=lessons)
     return redirect('/login')
+
 
 def main():
     db_session.global_init('db/main.db')
