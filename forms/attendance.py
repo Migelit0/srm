@@ -1,8 +1,13 @@
+from flask_table import Col, BoolCol
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, StringField, TextAreaField, SubmitField, BooleanField,
-from wtforms.fields.html5 import EmailField
-from wtforms.validators import DataRequired
 
 
-class AttendanceTable(FlaskForm):   # https://github.com/SergioLlana/datatables-flask-serverside
+class AttendanceTable(FlaskForm):  # https://github.com/SergioLlana/datatables-flask-serverside
     forms = []
+    classes = ['some_class']
+    # name = Col('Name')
+    attendance_bool = BoolCol('Attendance_bool', yes_display='Affirmative', no_display='Negatory')
+
+
+if __name__ == '__main__':
+    table = AttendanceTable(items, classes=['otherclass'])
