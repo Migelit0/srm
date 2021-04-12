@@ -5,10 +5,9 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from flask_restful import Api
 
 from data import db_session
-from data.groups import Group
-from data.users import User
 from data.attendance import Attendance
 from data.lessons import Lessons
+from data.users import User
 from forms.user import LoginForm
 from keys.key import SECRET_KEY
 
