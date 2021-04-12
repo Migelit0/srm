@@ -93,12 +93,24 @@ def lesson_attendance(lesson_id):
             if elem.lesson_number != prev:
                 prev = elem.lesson_number
                 data.append([])
+            # for i in elem:
+            #     data[-1]
             data[-1].append(elem)
 
-        # for elem in data:
-        #     print(elem)
+        data = tuple(zip(*data[::-1]))
 
-        return render_template('attendance_table.html', attendance=attendance)
+        # for row in data:
+        #     print(*[i.student_id for i in row])
+
+        students = []
+        for elem in data:
+            user = db_sess.query(User).filter(elem[0].student_id == User.id).first()
+            # students.append(user.name + ' ' + user.surname)
+            students.append(user)
+        # print(students)
+        dates = [j for j in range(max([len(i) for i in data]))]
+
+        return render_template('attendance_table.html', data=data, students=students, dates=dates)
     elif current_user.type == 2:
         return abort(404)
     # elif current_user.type == 3:
