@@ -119,6 +119,10 @@ def lesson_attendance(lesson_id):
         for _ in range(len(attendance)):
             form.all.append_entry()
 
+        if form.validate_on_submit():
+            print(form.all.data)
+            return redirect('/')
+
         return render_template('attendance_table.html', data=data, students=students, dates=dates, form=form)
     elif current_user.type == 2:
         return abort(404)
