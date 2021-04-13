@@ -3,6 +3,7 @@
 {% block content %}
 
 <table>
+    {% set num = 0 %}
     <tr>
         <th>Имя</th>
         {% for elem in dates%}
@@ -13,18 +14,19 @@
     <tr>
         <td>{{elem.name}} {{elem.surname}}</td>
         {% for student_attendance in data %}
-            {% for one in student_attendance %}
-                {% if one.student_id == elem.id %}
-                    {% if one.is_attended %}
-                        <td class="p-4 mb-2 bg-success text-white">+</td>
-                    {% else %}
-                        <td class="p-4 mb-2 bg-danger text-white">-</td>
-                    {% endif %}
-                {% endif %}
-            {% endfor %}
+        {% for one in student_attendance %}
+        {% if one.student_id == elem.id %}
+        {% if one.is_attended %}
+        <td class="p-4 mb-2 bg-success text-white">+</td>
+        {% else %}
+        <td class="p-4 mb-2 bg-danger text-white">-</td>
+        {% endif %}
+        {% endif %}
         {% endfor %}
+        {% set num = num + 1 %}
+        {% endfor %}
+        <td>{{ form.all[num]() }}</td>
     </tr>
     {% endfor %}
 </table>
-
 {% endblock %}

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from flask import Flask, render_template, redirect, make_response, session, request, abort
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_restful import Api
-
+from forms.attendance import AttendanceForm
 from data import db_session
 from data.attendance import Attendance
 from data.lessons import Lessons
@@ -79,6 +79,7 @@ def logout():
 def lesson_attendance(lesson_id):
     db_sess = db_session.create_session()
     if current_user.type in (1, 3):
+        lesson = db_sess.query(Lessons).filter(Lessons.id == lesson_id).first()
         attendance = db_sess.query(Attendance).filter(Attendance.lesson_id == lesson_id).all()
 
         # attendance.sort(key=lambda x: int(db_sess.query(Lessons).filter(Lessons.id == x.lesson_id).first().date[0]))
@@ -107,9 +108,18 @@ def lesson_attendance(lesson_id):
             # students.append(user.name + ' ' + user.surname)
             students.append(user)
         # print(students)
-        dates = [j for j in range(max([len(i) for i in data]))]
 
-        return render_template('attendance_table.html', data=data, students=students, dates=dates)
+        today = datetime.now()
+        first = datetime(today.year, 1, int(lesson.date[:1]))
+        dtime = timedelta(days=7)
+        dates = [(str((first + dtime * j).date().day) + '.' + str((first + dtime * j).date().month)) for j in
+                 range(max([len(i) for i in data]) + 1)]
+
+        form = AttendanceForm()
+        for _ in range(len(attendance)):
+            form.all.append_entry()
+
+        return render_template('attendance_table.html', data=data, students=students, dates=dates, form=form)
     elif current_user.type == 2:
         return abort(404)
     # elif current_user.type == 3:
