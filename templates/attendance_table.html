@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% set num = 0 %}
 
 <form action="" method="post">
-
     <table>
-        {% set num = 0 %}
+
         <tr>
             <th>Имя</th>
             {% for elem in dates%}
@@ -25,9 +25,10 @@
             {% endif %}
             {% endif %}
             {% endfor %}
-            {% set num = num + 1 %}
+
             {% endfor %}
-            <td>{{ form.all[num]() }}</td>
+            <td>{{ form.all[num]() }} {{num}}</td>
+            {% set num = 1 %}
         </tr>
         {% endfor %}
     </table>
