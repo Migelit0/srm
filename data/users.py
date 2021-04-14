@@ -12,7 +12,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
     surname = Column(String, nullable=False)
-    type = Column(Integer, nullable=False)  # 1 - teacher, 2 - student
+    type = Column(Integer, nullable=False)  # 1 - teacher, 2 - student, 3 - admin
     hashed_password = Column(String, nullable=True)
     login = Column(String, nullable=True, unique=True)
     # key = Column(String, nullable=True)
