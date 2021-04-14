@@ -7,7 +7,6 @@ from flask_restful import Api
 
 from data import db_session
 from data.attendance import Attendance
-from data.groups import Group
 from data.lessons import Lessons
 from data.payment import Payment
 from data.users import User
@@ -54,6 +53,36 @@ def session_test():
     session['visits_count'] = visits_count + 1
     return make_response(
         f"Вы пришли на эту страницу {visits_count + 1} раз")
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def reqister():
+    if current_user.is_authenticated and current_user.type != 3:
+        return abort(404)
+
+    form = RegisterForm()
+    if form.validate_on_submit():
+        if form.password.data != form.password_again.data:
+            return render_template('register.html', title='Регистрация',
+                                   form=form,
+                                   message="Пароли не совпадают")
+        db_sess = db_session.create_session()
+        if db_sess.query(User).filter(User.login == form.login.data).first():
+            return render_template('register.html', title='Регистрация',
+                                   form=form,
+                                   message="Такой пользователь уже есть")
+        type = request.form.get('type')
+        user = User(
+            name=form.name.data,
+            surname=form.surname.data,
+            login=form.login.data,
+            type=type
+        )
+        user.set_password(form.password.data)
+        db_sess.add(user)
+        db_sess.commit()
+        return redirect('/')
+    return render_template('register.html', title='Регистрация', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -135,53 +164,39 @@ def lesson_attendance(lesson_id):
     #     return render_template('attendance_table.html', attendance=attendance)
 
 
-@app.route('/register', methods=['GET', 'POST'])
-def reqister():
-    if current_user.is_authenticated and current_user.type != 3:
-        return abort(404)
-
-    form = RegisterForm()
-    if form.validate_on_submit():
-        if form.password.data != form.password_again.data:
-            return render_template('register.html', title='Регистрация',
-                                   form=form,
-                                   message="Пароли не совпадают")
-        db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.login == form.login.data).first():
-            return render_template('register.html', title='Регистрация',
-                                   form=form,
-                                   message="Такой пользователь уже есть")
-        type = request.form.get('type')
-        user = User(
-            name=form.name.data,
-            surname=form.surname.data,
-            login=form.login.data,
-            type=type
-        )
-        user.set_password(form.password.data)
-        db_sess.add(user)
-        db_sess.commit()
-        return redirect('/')
-    return render_template('register.html', title='Регистрация', form=form)
-
-
-@app.route('/lesson/pay/<int:user_id>', methods=['GET', 'POST'])
+@app.route('/lesson/pay/<int:lesson_id>', methods=['GET', 'POST'])
 @login_required
-def payment(user_id):
-    if current_user == 1:
+def payment(lesson_id):
+    if current_user.type != 3:
         return abort(404)
-
-    db_sess = db_session.create_session()
-    if current_user.type == 2:
-        data = db_sess.query(Group.students).filter(Group.teacher_id == current_user.id).all()
-        data = [i.split(';;') for i in data]
-        users = []
-        for elem in data:
-            users += elem
-        print(users)
 
     if current_user.type == 3:
-        data = db_sess.query(Payment).filter(Payment.student_id == user_id).all()
+        db_sess = db_session.create_session()
+        data = db_sess.query(Payment).filter(Payment.lesson_id == lesson_id).all()
+        lesson = db_sess.query(Lessons).filter(Lessons.id == lesson_id).first()
+        data.sort(key=lambda x: x.lesson_id)
+        print(*data)
+
+        payment = [[]]
+        prev = data[0].user_id
+        for elem in data:
+            if elem.lesson_id != prev:
+                prev = elem.user_id
+                payment.append([])
+            payment[-1].append(elem)
+
+        data = tuple(zip(*payment[::-1]))
+
+        for row in data:
+            print(*row)
+
+        today = datetime.now()
+        first = datetime(today.year, 1, int(lesson.date[:1]))
+        dtime = timedelta(days=7)
+        dates = [(str((first + dtime * j).date().day) + '.' + str((first + dtime * j).date().month))
+                 for j in range(max([len(i) for i in payment]) + 1)]
+
+        return render_template('payment_table.html', data=data, dates=dates)
 
 
 @app.route('/')
@@ -210,7 +225,6 @@ def main():
     port, host = args.port, args.host
 
     db_session.global_init('db/main.db')
-    # app.register_blueprint(jobs_api.blueprint)
     app.run(debug=True, port=port, host=host)
 
 
