@@ -1,3 +1,4 @@
+import argparse
 from datetime import datetime, timedelta
 
 from flask import Flask, render_template, redirect, make_response, session, request, abort
@@ -6,7 +7,9 @@ from flask_restful import Api
 
 from data import db_session
 from data.attendance import Attendance
+from data.groups import Group
 from data.lessons import Lessons
+from data.payment import Payment
 from data.users import User
 from forms.attendance import AttendanceForm
 from forms.user import LoginForm, RegisterForm
@@ -162,6 +165,25 @@ def reqister():
     return render_template('register.html', title='Регистрация', form=form)
 
 
+@app.route('/lesson/pay/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def payment(user_id):
+    if current_user == 1:
+        return abort(404)
+
+    db_sess = db_session.create_session()
+    if current_user.type == 2:
+        data = db_sess.query(Group.students).filter(Group.teacher_id == current_user.id).all()
+        data = [i.split(';;') for i in data]
+        users = []
+        for elem in data:
+            users += elem
+        print(users)
+
+    if current_user.type == 3:
+        data = db_sess.query(Payment).filter(Payment.student_id == user_id).all()
+
+
 @app.route('/')
 def index():
     if current_user.is_authenticated:
@@ -181,9 +203,15 @@ def index():
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, default=5000)
+    parser.add_argument('--host', type=str, default='127.0.0.1')
+    args = parser.parse_args()
+    port, host = args.port, args.host
+
     db_session.global_init('db/main.db')
     # app.register_blueprint(jobs_api.blueprint)
-    app.run(debug=True)
+    app.run(debug=True, port=port, host=host)
 
 
 if __name__ == '__main__':
