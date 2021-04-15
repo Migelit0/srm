@@ -1,39 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% set num = 0 %}
 
-<form action="" method="post">
-    <table>
-
-        <tr>
-            <th>Имя</th>
-            {% for elem in dates%}
+<table>
+    <tr>
+        <th>Имя</th>
+        {% for elem in dates%}
             <th>{{elem}}</th>
-            {% endfor %}
-        </tr>
-        {% for elem in students %}
-        <tr>
-            <td>{{elem.name}} {{elem.surname}}</td>
-            {% for student_attendance in data %}
-            {% for one in student_attendance %}
-            {% if one.student_id == elem.id %}
-            {% if one.is_attended %}
-            <td class="p-4 mb-2 bg-success text-white">+</td>
-            {% else %}
-            <td class="p-4 mb-2 bg-danger text-white">-</td>
-            {% endif %}
-            {% endif %}
-            {% endfor %}
-
-            {% endfor %}
-            <td>{{ form.all[num]() }} {{num}}</td>
-            {% set num = 1 %}
-        </tr>
         {% endfor %}
-    </table>
+    </tr>
+    {% for elem in students %}
+    <tr>
+        <td>{{elem.name}} {{elem.surname}}</td>
+        {% for payment in data %}
+            {% for one in payment %}
+                {% if one.student_id == elem.id %}
+                    {% if one.is_payed %}
+                        <td class="p-4 mb-2 bg-success text-white">+</td>
+                    {% else %}
+                        <td class="p-4 mb-2 bg-danger text-white">-</td>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
 
-    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
-
-</form>
 {% endblock %}

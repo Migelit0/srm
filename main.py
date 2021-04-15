@@ -109,7 +109,7 @@ def logout():
 
 @app.route('/lesson/<int:lesson_id>', methods=['GET', 'POST'])
 @login_required
-def lesson_attendance(lesson_id):
+def lesson_attendance(lesson_id):  # TODO: ДОДЕЛАТЬ ФОРМУ АТО НЕ РАБОТАЕТ ЫЫЫЫЫ
     db_sess = db_session.create_session()
     if current_user.type in (1, 3):
         lesson = db_sess.query(Lessons).filter(Lessons.id == lesson_id).first()
@@ -171,32 +171,45 @@ def payment(lesson_id):
         return abort(404)
 
     if current_user.type == 3:
+
         db_sess = db_session.create_session()
         data = db_sess.query(Payment).filter(Payment.lesson_id == lesson_id).all()
+        if not data:
+            # TODO: ЗДЕСЬ НУЖНО СОЗДАТЬ ОПЛАТУ ДЛЯ УЧЕНИКОВ
+            return abort(404)
+
         lesson = db_sess.query(Lessons).filter(Lessons.id == lesson_id).first()
-        data.sort(key=lambda x: x.lesson_id)
-        print(*data)
+        data.sort(key=lambda x: x.student_id)
 
         payment = [[]]
-        prev = data[0].user_id
+        prev = data[0].student_id
         for elem in data:
-            if elem.lesson_id != prev:
-                prev = elem.user_id
+            if elem.student_id != prev:
+                prev = elem.student_id
                 payment.append([])
             payment[-1].append(elem)
+        # print(payment)
+        # data = tuple(zip(*payment[::-1]))
+        data = payment.copy()
 
-        data = tuple(zip(*payment[::-1]))
+        # for row in data:
+        #     print(*row)
 
-        for row in data:
-            print(*row)
+
+        students = []
+        for elem in data:
+            user = db_sess.query(User).filter(elem[0].student_id == User.id).first()
+            students.append(user)
 
         today = datetime.now()
         first = datetime(today.year, 1, int(lesson.date[:1]))
         dtime = timedelta(days=7)
         dates = [(str((first + dtime * j).date().day) + '.' + str((first + dtime * j).date().month))
-                 for j in range(max([len(i) for i in payment]) + 1)]
+                 for j in range(max([len(i) for i in payment]))]
 
-        return render_template('payment_table.html', data=data, dates=dates)
+        # print(students)
+
+        return render_template('payment_table.html', data=data, dates=dates, students=students)
 
 
 @app.route('/')
