@@ -195,7 +195,6 @@ def payment(lesson_id):
         # for row in data:
         #     print(*row)
 
-
         students = []
         for elem in data:
             user = db_sess.query(User).filter(elem[0].student_id == User.id).first()
@@ -209,7 +208,7 @@ def payment(lesson_id):
 
         # print(students)
 
-        return render_template('payment_table.html', data=data, dates=dates, students=students)
+        return render_template('payment_table.html', data=data, dates=dates, students=students, lesson_id=lesson_id)
 
 
 @app.route('/')
