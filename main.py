@@ -12,6 +12,7 @@ from data.payment import Payment
 from data.users import User
 from forms.attendance import AttendanceForm
 from forms.user import LoginForm, RegisterForm
+from forms.payment import AddPaymentForm
 from keys.key import SECRET_KEY
 
 app = Flask(__name__)
@@ -210,6 +211,14 @@ def payment(lesson_id):
 
         return render_template('payment_table.html', data=data, dates=dates, students=students, lesson_id=lesson_id)
 
+
+@app.route('/lesson/pay/add/<int:lesson_id>', methods=['GET', 'POST'])
+@login_required
+def add_payment(lesson_id): # TODO: НУ ЭТО ТОЖЕ ДОДЕЛАТЬ
+    if current_user.type != 3:
+        return abort(404)
+    form = AddPaymentForm()
+    return render_template('payment_add.html', form=form)
 
 @app.route('/')
 def index():
