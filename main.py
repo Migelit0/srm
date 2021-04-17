@@ -5,14 +5,18 @@ from flask import Flask, render_template, redirect, make_response, session, requ
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_restful import Api
 
+from for_db import add_payment
+
 from data import db_session
 from data.attendance import Attendance
 from data.lessons import Lessons
 from data.payment import Payment
 from data.users import User
+
 from forms.attendance import AttendanceForm
 from forms.payment import AddPaymentForm
 from forms.user import LoginForm, RegisterForm
+
 from keys.key import SECRET_KEY
 
 app = Flask(__name__)
@@ -214,18 +218,28 @@ def payment(lesson_id):
 
 @app.route('/lesson/pay/add/<int:lesson_id>', methods=['GET', 'POST'])
 @login_required
-def add_payment(lesson_id):  # TODO: НУ ЭТО ТОЖЕ ДОДЕЛАТЬ
+def add_payment_page(lesson_id):
     if current_user.type != 3:
         return abort(404)
     form = AddPaymentForm()
     if form.validate_on_submit():
-        if not form.student_id.data.isdigit() or not form.days_number.isdigit():
-            return render_template('payment_add.html', title='Оплата', form=form, message='Ошибка в формате данных')
+        # if not form.student_id.data.isdigit() or not form.days_number.isdigit():
+        #     return render_template('payment_add.html', title='Оплата', form=form, message='Ошибка в формате данных')
         db_sess = db_session.create_session()
-        student_id = request.form.get('student_id')
+        student_id = int(request.form.get('student_id'))
+        days_number = int(request.form.get('days_number'))
         payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.is_payed == 0).all()
         payment.sort(key=lambda x: x.lesson_number)
-        # TODO: ДОДЕЛАТЬ ДОБАВЛЕНИЕ ПЛАТЕЖЕЙ И КРУТО КОРОЧЕ ПУСТЬ БУДЕТ БЛИНА
+        if len(payment) < days_number:
+            for _ in range(days_number - len(payment)):
+                add_payment(lesson_id)
+        payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.is_payed == 0).all()
+        payment.sort(key=lambda x: x.lesson_number)
+        for i in range(days_number):
+            payment[i].is_payed = True
+        db_sess.commit()
+
+        return redirect(f'/lesson/pay/{lesson_id}')
     return render_template('payment_add.html', title='Оплата', form=form)
 
 
