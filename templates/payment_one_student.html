@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>{{student.user}} {{student.surname}}</h1>
+
+<table>
+    <tr>
+        {% for elem in dates%}
+        <th>{{elem}}</th>
+        {% endfor %}
+    </tr>
+    {% for elem in students %}
+    <tr>
+        {% for payment in data %}
+        {% for one in payment %}
+        {% if one.student_id == elem.id %}
+        {% if one.is_payed %}
+        <td class="p-4 mb-2 bg-success text-white">➕</td>
+        {% else %}
+        <td class="p-4 mb-2 bg-danger text-white">➖</td>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+<a class="btn btn-primary navbar-brand text-white" style="margin-right: auto" href="/lesson/pay/add/{{lesson_id}}">
+    Добавить оплату
+</a>
+{% endblock %}

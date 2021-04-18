@@ -5,18 +5,15 @@ from flask import Flask, render_template, redirect, make_response, session, requ
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_restful import Api
 
-from for_db import add_payment
-
 from data import db_session
 from data.attendance import Attendance
 from data.lessons import Lessons
 from data.payment import Payment
 from data.users import User
-
+from for_db import add_payment
 from forms.attendance import AttendanceForm
 from forms.payment import AddPaymentForm
 from forms.user import LoginForm, RegisterForm
-
 from keys.key import SECRET_KEY
 
 app = Flask(__name__)
@@ -234,7 +231,9 @@ def payment_one_student(lesson_id, student_id):
         db_sess.commit()
 
         return redirect(f'/lesson/pay/{lesson_id}')
-    return render_template('payment_add.html', title='Оплата', form=form)
+    db_sess = db_session.create_session()
+    student = db_sess.query(User).filter(User.id == student_id).first()
+    return render_template('payment_one_student.html', title='Оплата', form=form, student=student)
 
 
 @app.route('/lesson/pay/add/<int:lesson_id>', methods=['GET', 'POST'])
@@ -252,11 +251,11 @@ def add_payment_page(lesson_id):
         payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.is_payed == 0).all()
         payment.sort(key=lambda x: x.lesson_number)
         if len(payment) < days_number:
-            for _ in range(days_number - len(payment)): # Если нет платежей, то добавляем
+            for _ in range(days_number - len(payment)):  # Если нет платежей, то добавляем
                 add_payment(lesson_id)
         payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.is_payed == 0).all()
         payment.sort(key=lambda x: x.lesson_number)
-        for i in range(days_number):
+        for i in range(days_number):  # оплачиваем
             payment[i].is_payed = True
         db_sess.commit()
 
