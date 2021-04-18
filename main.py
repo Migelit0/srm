@@ -180,7 +180,7 @@ def payment(lesson_id):
         db_sess = db_session.create_session()
         data = db_sess.query(Payment).filter(Payment.lesson_id == lesson_id).all()
         if not data:
-            # TODO: ЗДЕСЬ НУЖНО СОЗДАТЬ ОПЛАТУ ДЛЯ УЧЕНИКОВ
+            add_payment(lesson_id)
             return abort(404)
 
         lesson = db_sess.query(Lessons).filter(Lessons.id == lesson_id).first()
@@ -197,9 +197,6 @@ def payment(lesson_id):
         # data = tuple(zip(*payment[::-1]))
         data = payment.copy()
 
-        # for row in data:
-        #     print(*row)
-
         students = []
         for elem in data:
             user = db_sess.query(User).filter(elem[0].student_id == User.id).first()
@@ -211,9 +208,33 @@ def payment(lesson_id):
         dates = [(str((first + dtime * j).date().day) + '.' + str((first + dtime * j).date().month))
                  for j in range(max([len(i) for i in payment]))]
 
-        # print(students)
-
         return render_template('payment_table.html', data=data, dates=dates, students=students, lesson_id=lesson_id)
+
+
+@app.route('/lesson/pay/add/<int:lesson_id>/<int:student_id>', methods=['GET', 'POST'])
+@login_required
+def payment_one_student(lesson_id, student_id):
+    if current_user.type != 3:
+        return abort(404)
+    form = AddPaymentForm()
+    if form.validate_on_submit():
+        # if not form.student_id.data.isdigit() or not form.days_number.isdigit():
+        #     return render_template('payment_add.html', title='Оплата', form=form, message='Ошибка в формате данных')
+        db_sess = db_session.create_session()
+        days_number = int(request.form.get('days_number'))
+        payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.is_payed == 0).all()
+        payment.sort(key=lambda x: x.lesson_number)
+        if len(payment) < days_number:
+            for _ in range(days_number - len(payment)):
+                add_payment(lesson_id)
+        payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.is_payed == 0).all()
+        payment.sort(key=lambda x: x.lesson_number)
+        for i in range(days_number):
+            payment[i].is_payed = True
+        db_sess.commit()
+
+        return redirect(f'/lesson/pay/{lesson_id}')
+    return render_template('payment_add.html', title='Оплата', form=form)
 
 
 @app.route('/lesson/pay/add/<int:lesson_id>', methods=['GET', 'POST'])
@@ -231,7 +252,7 @@ def add_payment_page(lesson_id):
         payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.is_payed == 0).all()
         payment.sort(key=lambda x: x.lesson_number)
         if len(payment) < days_number:
-            for _ in range(days_number - len(payment)):
+            for _ in range(days_number - len(payment)): # Если нет платежей, то добавляем
                 add_payment(lesson_id)
         payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.is_payed == 0).all()
         payment.sort(key=lambda x: x.lesson_number)
@@ -240,7 +261,7 @@ def add_payment_page(lesson_id):
         db_sess.commit()
 
         return redirect(f'/lesson/pay/{lesson_id}')
-    return render_template('payment_add.html', title='Оплата', form=form)
+    return render_template('payment_add.html', title='Оплата', form=form, lesson_id=lesson_id)
 
 
 @app.route('/')

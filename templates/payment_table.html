@@ -11,7 +11,7 @@
     </tr>
     {% for elem in students %}
     <tr>
-        <td><a href="/lesson/pay/add/{{elem.id}}">{{elem.name}} {{elem.surname}}</a></td>
+        <td><a href="/lesson/pay/add/{{lesson_id}}/{{elem.id}}">{{elem.name}} {{elem.surname}}</a></td>
         {% for payment in data %}
         {% for one in payment %}
         {% if one.student_id == elem.id %}
