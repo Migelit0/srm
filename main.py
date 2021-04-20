@@ -10,8 +10,9 @@ from data.attendance import Attendance
 from data.lessons import Lessons
 from data.payment import Payment
 from data.users import User
+from data.groups import Group
 from for_db import add_payment
-from forms.attendance import AttendanceForm
+from forms.attendance import AttendanceForm, AddStudentToGroupForm
 from forms.payment import AddPaymentForm
 from forms.user import LoginForm, RegisterForm
 from keys.key import SECRET_KEY
@@ -114,11 +115,13 @@ def logout():
 def lesson_attendance(lesson_id):  # TODO: ДОДЕЛАТЬ ФОРМУ АТО НЕ РАБОТАЕТ ЫЫЫЫЫ
     db_sess = db_session.create_session()
     if current_user.type in (1, 3):
+        if current_user.type == 1:  # Проверка принадлежит ли группа учителю
+            groups = db_sess.query(Group.id).filter(Group.teacher_id == current_user.id).all
+            if lesson_id not in groups:
+                return abort(404)   # выгоняем со странички, если нет
+
         lesson = db_sess.query(Lessons).filter(Lessons.id == lesson_id).first()
         attendance = db_sess.query(Attendance).filter(Attendance.lesson_id == lesson_id).all()
-
-        # attendance.sort(key=lambda x: int(db_sess.query(Lessons).filter(Lessons.id == x.lesson_id).first().date[0]))
-        # print([db_sess.query(Lessons).filter(Lessons.id == i.lesson_id).first().date for i in attendance])
 
         attendance.sort(key=lambda x: x.lesson_number)
 
@@ -128,14 +131,9 @@ def lesson_attendance(lesson_id):  # TODO: ДОДЕЛАТЬ ФОРМУ АТО Н
             if elem.lesson_number != prev:
                 prev = elem.lesson_number
                 data.append([])
-            # for i in elem:
-            #     data[-1]
             data[-1].append(elem)
 
         data = tuple(zip(*data[::-1]))
-
-        # for row in data:
-        #     print(*[i.student_id for i in row])
 
         students = []
         for elem in data:
@@ -250,7 +248,7 @@ def payment_one_student(lesson_id, student_id):
     first = datetime(today.year, 1, int(lesson.date[:1]))
     dtime = timedelta(days=7)
     sth = [(str((first + dtime * j).date().day) + '.' + str((first + dtime * j).date().month)) for j in
-             range(max([len(i) for i in all_data]) + 1)]
+             range(len(payment))] #max([len(i) for i in all_data]))]
 
     dates =[[]]
     counter = 0
@@ -261,7 +259,6 @@ def payment_one_student(lesson_id, student_id):
         dates[-1].append(elem)
         counter += 1
 
-    # TODO: В ХТМЛ СДЕЛАТЬ СТРЕЛОШКУ НАЗАД АГА
     return render_template('payment_one_student.html',
                            title='Оплата', form=form, student=student, all_data=all_data,
                            dates=dates, length=len(all_data), lesson_id=lesson_id)

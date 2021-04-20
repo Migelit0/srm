@@ -1,10 +1,22 @@
+
 {% extends "base.html" %}
 
+
+
+
 {% block content %}
-<a>
-    <a style="margin-right: 100%" href="/lesson/pay/{{lesson_id}}">🔙</a>
-    <h1>{{student.name}} {{student.surname}}</h1>
-</a>
+<header>
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand" href="/lesson/pay/{{lesson_id}}">🔙</a>
+        <h1>{{student.name}} {{student.surname}}</h1>
+
+
+
+    </nav>
+</header>
+
+<center>
+<main role="main" class="container">
 {% for i in range(length) %}
 <table>
     <tr>
@@ -22,14 +34,16 @@
         {% endfor %}
     </tr>
 </table>
-
 {% endfor %}
+</center>
+
 
 <form action="" method="post">
+    <center>
     {{ form.hidden_tag() }}
     <p>
-        {{ form.days_number.label }}<br>
-        {{ form.days_number(class="form-control") }}<br>
+    <h3>{{ form.days_number.label }}</h3><br>
+        <div style="width: 20%">{{ form.days_number(class="form-control") }}</div><br>
         {% for error in form.days_number.errors %}
     <div class="alert alert-danger" role="alert">
         {{ error }}
@@ -38,6 +52,9 @@
     </p>
     <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
     <div>{{ message }}</div>
+        </center>
 </form>
+</main>
+
 
 {% endblock %}

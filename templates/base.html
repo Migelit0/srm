@@ -17,7 +17,8 @@
         <a class="navbar-brand" href="/">SRM</a>
 
         {% if current_user.type == 3 %}
-        <a class="btn btn-success navbar-brand text-white" style="margin-left: auto" href="/register">Зарегестрировать пользователя</a>
+        <a class="btn btn-success navbar-brand text-white" style="margin-left: auto" href="/register">Зарегистрировать
+            пользователя</a>
         {% endif %}
 
         {% if current_user.is_authenticated %}
@@ -33,8 +34,8 @@
     </nav>
 </header>
 <!-- Begin page content -->
-<main role="main" class="container">
-    {% block content %}{% endblock %}
-</main>
+<!-- <main role="main" class="container"> -->
+{% block content %}{% endblock %}
+<!-- </main> -->
 </body>
 </html>
