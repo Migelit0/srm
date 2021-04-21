@@ -7,12 +7,12 @@ from flask_restful import Api
 
 from data import db_session
 from data.attendance import Attendance
+from data.groups import Group
 from data.lessons import Lessons
 from data.payment import Payment
 from data.users import User
-from data.groups import Group
 from for_db import add_payment
-from forms.attendance import AttendanceForm, AddStudentToGroupForm
+from forms.attendance import AttendanceForm
 from forms.payment import AddPaymentForm
 from forms.user import LoginForm, RegisterForm
 from keys.key import SECRET_KEY
@@ -99,7 +99,7 @@ def login():
             return redirect("/")
         return render_template('login.html',
                                message="Неправильный логин или пароль",
-                               form=form)
+                               form=form, title='Авторизация')
     return render_template('login.html', title='Авторизация', form=form)
 
 
@@ -118,7 +118,7 @@ def lesson_attendance(lesson_id):  # TODO: ДОДЕЛАТЬ ФОРМУ АТО Н
         if current_user.type == 1:  # Проверка принадлежит ли группа учителю
             groups = db_sess.query(Group.id).filter(Group.teacher_id == current_user.id).all
             if lesson_id not in groups:
-                return abort(404)   # выгоняем со странички, если нет
+                return abort(404)  # выгоняем со странички, если нет
 
         lesson = db_sess.query(Lessons).filter(Lessons.id == lesson_id).first()
         attendance = db_sess.query(Attendance).filter(Attendance.lesson_id == lesson_id).all()
@@ -152,18 +152,31 @@ def lesson_attendance(lesson_id):  # TODO: ДОДЕЛАТЬ ФОРМУ АТО Н
         for _ in range(len(attendance)):
             form.all.append_entry()
 
-        if form.validate_on_submit():
-            print(form.all.data)
+        if form.validate_on_submit():  # обработка формы (получение даг=ныых)
+            # print(form.all.data)
+            new_id = request.form.get('student_id')
+            print(new_id)
+            if new_id:
+                student = db_sess.query(User).filter(User.id == new_id).first()
+                if not student:
+                    return render_template('attendance_table.html', data=data, students=students, dates=dates,
+                                           form=form,
+                                           title='Посещаемость', message='Такого пользователя не существует')
             return redirect('/')
 
-        return render_template('attendance_table.html', data=data, students=students, dates=dates, form=form)
+        # adder_form = AddPaymentForm()
+        # if adder_form.validate_on_submit():
+        #     new_id = request.form.get('student_id')
+        #     student = db_sess.query(User).filter(User.id == new_id).first()
+        #     if not student:
+        #         return render_template('attendance_table.html', data=data, students=students, dates=dates, form=form,
+        #                                title='Посещаемость', message='Такого пользователя не существует')
+        #     db_sess.add()
+
+        return render_template('attendance_table.html', data=data, students=students, dates=dates, form=form,
+                               title='Посещаемость')
     elif current_user.type == 2:
         return abort(404)
-    # elif current_user.type == 3:
-    #     attendance = db_sess.query(Lessons).filter(Lessons.id == lesson_id).all()
-    #     return render_template('attendance_table.html', attendance=attendance)
-
-
 @app.route('/lesson/pay/<int:lesson_id>', methods=['GET', 'POST'])
 @login_required
 def payment(lesson_id):
@@ -236,21 +249,20 @@ def payment_one_student(lesson_id, student_id):
     payment.sort(key=lambda x: x.lesson_number)
     all_data = [[]]
     counter = 0
-    for elem in payment:    # офигеть как лень нормально сделать простити
+    for elem in payment:  # офигеть как лень нормально сделать простити
         if counter == 8:
             counter = 0
             all_data.append([])
         all_data[-1].append(elem)
         counter += 1
 
-
     today = datetime.now()
     first = datetime(today.year, 1, int(lesson.date[:1]))
     dtime = timedelta(days=7)
     sth = [(str((first + dtime * j).date().day) + '.' + str((first + dtime * j).date().month)) for j in
-             range(len(payment))] #max([len(i) for i in all_data]))]
+           range(len(payment))]  # max([len(i) for i in all_data]))]
 
-    dates =[[]]
+    dates = [[]]
     counter = 0
     for elem in sth:
         if counter == 8:
@@ -271,8 +283,6 @@ def add_payment_page(lesson_id):
         return abort(404)
     form = AddPaymentForm()
     if form.validate_on_submit():
-        # if not form.student_id.data.isdigit() or not form.days_number.isdigit():
-        #     return render_template('payment_add.html', title='Оплата', form=form, message='Ошибка в формате данных')
         db_sess = db_session.create_session()
         student_id = int(request.form.get('student_id'))
         days_number = int(request.form.get('days_number'))

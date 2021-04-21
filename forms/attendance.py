@@ -20,8 +20,10 @@ class AttendanceForm(FlaskForm):  # https://github.com/SergioLlana/datatables-fl
     #   student_5 = BooleanField('test', validators=[DataRequired()])
     # all = [student_0, student_1, student_2, student_3, student_4, student_5]
     all = FieldList(FormField(Stundent))
+    student_id = IntegerField('ID ученика')
     submit = SubmitField('Сохранить')
 
 
 class AddStudentToGroupForm(FlaskForm):
     student_id = IntegerField(validators=[DataRequired()])
+    submit = SubmitField('Добавить')

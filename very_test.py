@@ -14,6 +14,6 @@ from forms.attendance import AttendanceForm
 from forms.user import LoginForm, RegisterForm
 from keys.key import SECRET_KEY
 
-db_session.global_init('db/main.db')
-db_sess = db_session.create_session()
-print(db_sess.query(Payment).all())
+# db_session.global_init('db/main.db')
+# db_sess = db_session.create_session()
+# print(db_sess.query(Payment).all())

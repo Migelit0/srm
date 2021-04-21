@@ -56,6 +56,8 @@ def add_payment(lesson_id):
         db_sess.add(new_payment)
     db_sess.commit()
 
+def make_it_correct(student_id):
+    pass
 
 if __name__ == '__main__':
     add_payment(2)
