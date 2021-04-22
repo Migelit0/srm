@@ -1,5 +1,6 @@
 import argparse
 from datetime import datetime, timedelta
+import re
 
 from flask import Flask, render_template, redirect, make_response, session, request, abort
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
@@ -11,10 +12,11 @@ from data.groups import Group
 from data.lessons import Lessons
 from data.payment import Payment
 from data.users import User
-from for_db import add_payment
+from for_db import add_payment, add_attendances
 from forms.attendance import AttendanceForm
 from forms.payment import AddPaymentForm
 from forms.user import LoginForm, RegisterForm
+from forms.lesson import AddNewLessonForm
 from keys.key import SECRET_KEY
 
 app = Flask(__name__)
@@ -122,6 +124,9 @@ def lesson_attendance(lesson_id):  # TODO: ДОДЕЛАТЬ ФОРМУ АТО Н
 
         lesson = db_sess.query(Lessons).filter(Lessons.id == lesson_id).first()
         attendance = db_sess.query(Attendance).filter(Attendance.lesson_id == lesson_id).all()
+        if not attendance:
+            add_attendances(lesson_id)
+        attendance = db_sess.query(Attendance).filter(Attendance.lesson_id == lesson_id).all()
 
         attendance.sort(key=lambda x: x.lesson_number)
 
@@ -155,7 +160,6 @@ def lesson_attendance(lesson_id):  # TODO: ДОДЕЛАТЬ ФОРМУ АТО Н
         if form.validate_on_submit():  # обработка формы (получение даг=ныых)
             # print(form.all.data)
             new_id = request.form.get('student_id')
-            print(new_id)
             if new_id:
                 student = db_sess.query(User).filter(User.id == new_id).first()
                 if not student:
@@ -177,6 +181,8 @@ def lesson_attendance(lesson_id):  # TODO: ДОДЕЛАТЬ ФОРМУ АТО Н
                                title='Посещаемость')
     elif current_user.type == 2:
         return abort(404)
+
+
 @app.route('/lesson/pay/<int:lesson_id>', methods=['GET', 'POST'])
 @login_required
 def payment(lesson_id):
@@ -189,7 +195,7 @@ def payment(lesson_id):
         data = db_sess.query(Payment).filter(Payment.lesson_id == lesson_id).all()
         if not data:
             add_payment(lesson_id)
-            return abort(404)
+            data = db_sess.query(Payment).filter(Payment.lesson_id == lesson_id).all()
 
         lesson = db_sess.query(Lessons).filter(Lessons.id == lesson_id).first()
         data.sort(key=lambda x: x.student_id)
@@ -229,12 +235,14 @@ def payment_one_student(lesson_id, student_id):
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         days_number = int(request.form.get('days_number'))
-        payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.is_payed == 0).all()
+        payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.is_payed == 0,
+                                                Payment.lesson_id == lesson_id).all()
         payment.sort(key=lambda x: x.lesson_number)
         if len(payment) < days_number:
             for _ in range(days_number - len(payment)):  # Если нет платежей, то добавляем
                 add_payment(lesson_id)
-        payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.is_payed == 0).all()
+        payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.is_payed == 0,
+                                                Payment.lesson_id == lesson_id).all()
         payment.sort(key=lambda x: x.lesson_number)
         for i in range(days_number):  # оплачиваем
             payment[i].is_payed = True
@@ -245,7 +253,7 @@ def payment_one_student(lesson_id, student_id):
     student = db_sess.query(User).filter(User.id == student_id).first()
     lesson = db_sess.query(Lessons).filter(Lessons.id == lesson_id).first()
 
-    payment = db_sess.query(Payment).filter(Payment.student_id == student_id).all()
+    payment = db_sess.query(Payment).filter(Payment.student_id == student_id, Payment.lesson_id == lesson_id).all()
     payment.sort(key=lambda x: x.lesson_number)
     all_data = [[]]
     counter = 0
@@ -299,6 +307,39 @@ def add_payment_page(lesson_id):
 
         return redirect(f'/lesson/pay/{lesson_id}')
     return render_template('payment_add.html', title='Оплата', form=form, lesson_id=lesson_id)
+
+
+@app.route('/add_lesson', methods=['GET', 'POST'])
+@login_required
+def add_lesson():
+    if current_user.type != 3:
+        return abort(404)
+    form = AddNewLessonForm()
+    if form.validate_on_submit():
+        group_id = request.form.get('group_id')
+        teacher_id = request.form.get('teacher_id')
+        date = request.form.get('date')
+        title = request.form.get('title')
+        # \d\d:\d\d-\d{,2}
+        db_sess = db_session.create_session()
+        if re.match(r'\d\d:\d\d-\d', date).group(0) != date:  # РЕГУЛЯРКИ ААААА ШТО ВЫ СО МНОЙ ДЕЛАЕТЕ А
+            print(re.match('\d\d:\d\d-\d', date).group(0))
+            return render_template('add_lesson.html', form=form, title='Добавление занятия',
+                                   message='Невереный формат даты')
+        if not db_sess.query(User).filter(User.id == teacher_id, User.type == 2).first():
+            return render_template('add_lesson.html', form=form, title='Добавление занятия',
+                                   message='Учителя с таким ID не сущетсвует')
+        new_lesson = Lessons(
+            group_id=group_id,
+            teacher_id=teacher_id,
+            date=date,
+            title=title
+        )
+        db_sess = db_session.create_session()
+        db_sess.add(new_lesson)
+        db_sess.commit()
+        return redirect('/')
+    return render_template('add_lesson.html', form=form, title='Добавление занятия')
 
 
 @app.route('/')

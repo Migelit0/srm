@@ -17,8 +17,10 @@
         <a class="navbar-brand" href="/">SRM</a>
 
         {% if current_user.type == 3 %}
-        <a class="btn btn-success navbar-brand text-white" style="margin-left: auto" href="/register">Зарегистрировать
-            пользователя</a>
+        <div style="margin-left: auto">
+            <a class="btn btn-success navbar-brand text-white" href="/register">Зарегистрировать пользователя</a>
+            <a class="btn btn-success navbar-brand text-white" href="/add_lesson">Добавить занятие</a>
+        </div>
         {% endif %}
 
         {% if current_user.is_authenticated %}
