@@ -29,4 +29,4 @@
   ![img.png](readme/img.png)
   
 * __База данных__  
-Тут уже интересней. Диаграмму можно посмотреть по [ссылке](readme/BD_Diagram.drawio)
+Тут уже интересней. Диаграмму можно посмотреть по [ссылке](https://app.diagrams.net/#HMigelit0%2Fsrm%2Fmaster%2Freadme%2FBD_Diagram.drawio)
