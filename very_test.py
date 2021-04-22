@@ -17,3 +17,5 @@ from keys.key import SECRET_KEY
 # db_session.global_init('db/main.db')
 # db_sess = db_session.create_session()
 # print(db_sess.query(Payment).all())
+print(*[i if (len([a if i % a == 0 else 0 for a in range(1, i + 1)]) - [a if i % a == 0 else 0 for a in range(1, i + 1)].count(0)) == 4
+        else 0 for i in range(126849, 126872)])
