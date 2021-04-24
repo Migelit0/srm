@@ -2,8 +2,8 @@
 
 {% block content %}
 
-{% for i in range(10) %}
-<div class="col p-4 mb-2 bg-danger text-white text-center h4" style="border-radius: 15px">ERROR</div>
-{% endfor %}
+<main role="main" class="container">
+    <div class="col p-4 mb-2 bg-danger text-white text-center h4" style="border-radius: 15px">{{message}}</div>
+</main>
 
 {% endblock %}

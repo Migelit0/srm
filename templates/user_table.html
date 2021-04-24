@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<main role="main" class="container">
+    <h1>Учителя</h1>
+    <div class="row row-cols-4 row-cols-sm-3 row-cols-md-4">
+        <table>
+            <tr>
+                <th>Id</th>
+                <th>Имя</th>
+                <th>Фамилия</th>
+            </tr>
+            {% for teacher in teachers %}
+            <tr>
+                <th class="col p-4 mb-2 bg-primary text-white text-center h4">{{ teacher.id }}</th>
+                <th class="col p-4 mb-2 bg-info text-white text-center h4">{{ teacher.name }}</th>
+                <th class="col p-4 mb-2 bg-info text-white text-center h4">{{ teacher.surname }}</th>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <br>
+
+    <h1>Ученики</h1>
+    <div class="row row-cols-4 row-cols-sm-3 row-cols-md-4">
+        <table>
+            <tr>
+                <th>Id</th>
+                <th>Имя</th>
+                <th>Фамилия</th>
+            </tr>
+            {% for user in students %}
+            <tr>
+                <th class="col p-4 mb-2 bg-primary text-white text-center h4">{{ user.id }}</th>
+                <th class="col p-4 mb-2 bg-info text-white text-center h4">{{ user.name }}</th>
+                <th class="col p-4 mb-2 bg-info text-white text-center h4">{{ user.surname }}</th>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <br>
+
+    <h1>Ученики</h1>
+    <div class="row row-cols-4 row-cols-sm-3 row-cols-md-4">
+        <table>
+            <tr>
+                <th>Id</th>
+                <th>Имя</th>
+                <th>Фамилия</th>
+            </tr>
+            {% for user in admins %}
+            <tr>
+                <th class="col p-4 mb-2 bg-primary text-white text-center h4">{{ user.id }}</th>
+                <th class="col p-4 mb-2 bg-info text-white text-center h4">{{ user.name }}</th>
+                <th class="col p-4 mb-2 bg-info text-white text-center h4">{{ user.surname }}</th>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</main>
+
+{% endblock %}

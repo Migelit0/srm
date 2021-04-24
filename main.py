@@ -1,6 +1,6 @@
 import argparse
-from datetime import datetime, timedelta
 import re
+from datetime import datetime, timedelta
 
 from flask import Flask, render_template, redirect, make_response, session, request, abort
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
@@ -14,9 +14,9 @@ from data.payment import Payment
 from data.users import User
 from for_db import add_payment, add_attendances
 from forms.attendance import AttendanceForm
+from forms.lesson import AddNewLessonForm
 from forms.payment import AddPaymentForm
 from forms.user import LoginForm, RegisterForm
-from forms.lesson import AddNewLessonForm
 from keys.key import SECRET_KEY
 
 app = Flask(__name__)
@@ -342,6 +342,19 @@ def add_lesson():
     return render_template('add_lesson.html', form=form, title='Добавление занятия')
 
 
+@app.route('/ids')
+@login_required
+def show_ids():
+    if current_user.type != 3:
+        return abort(404)
+    db_sess = db_session.create_session()
+    students = db_sess.query(User).filter(User.type == 2).all()
+    teachers = db_sess.query(User).filter(User.type == 1).all()
+    admins = db_sess.query(User).filter(User.type == 3).all()
+    return render_template('user_table.html', students=students, teachers=teachers, admins=admins,
+                           title='Таблица пользователей')   # 49 63 -529    # -205 72 -519
+
+
 @app.route('/')
 def index():
     if current_user.is_authenticated:
@@ -351,9 +364,14 @@ def index():
             lessons = db_sess.query(Lessons).filter(Lessons.teacher_id == current_user.id,
                                                     Lessons.date.like(f'{today}%')).all()
             # print(lessons)
+            # if not lessons:
+            #     return render_template('error.html', title='Главная', message='У вас сегодня нет занятий')
             return render_template('index_teacher.html', title='Главная', lessons=lessons)
         elif current_user.type == 2:  # для студента
-            return render_template('index_student.html', title='Главная', lessons=lessons)
+            try:
+                return render_template('index_student.html', title='Главная', lessons=lessons)
+            except Exception:
+                return render_template('error.html', message='-_-', title='Главная')
         elif current_user.type == 3:  # для админа
             lessons = db_sess.query(Lessons).all()
             return render_template('index_admin.html', title='Главная', lessons=lessons)
